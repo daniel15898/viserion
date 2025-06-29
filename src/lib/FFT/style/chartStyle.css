@@ -1,0 +1,9 @@
+/* Additional Highcharts selection styling */
+.highcharts-selection-marker {
+  fill: hsl(from var(--color-primary) h s l / 0.15) !important;
+  opacity: 0.1 !important;
+  stroke: var(--color-primary) !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5, 5 !important; /* Optional: dashed border */
+  opacity: 0.8 !important;
+}
