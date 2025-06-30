@@ -2,10 +2,7 @@ import { EventBus } from "@/lib/EventBus/eventBus";
 import { zipArrays } from "@/lib/utils/helperFunctions";
 import { DEFAULT_FFT_CONFIG } from "../config/fft-config";
 import type { FftCallbacks } from "../types/fft-callbacks";
-import type {
-  FFTDataManagerState,
-  TargetSeries,
-} from "../types/fft-data-manager";
+import type { FFTDataManagerState } from "../types/fft-data-manager";
 import type { FFTManagerConfig, FFTParams } from "../types/fft-manager";
 
 export class DataManager {
@@ -24,10 +21,9 @@ export class DataManager {
       frequencies: [],
       fftData: [],
       chartData: [],
-      maxHoldEnabled: true,
+      maxHoldEnabled: false,
       maxHoldData: [],
       maxHoldChartData: [],
-      targetSeries: "fft",
     };
 
     if (defaultParams.fftParams) {
@@ -107,11 +103,7 @@ export class DataManager {
     let yValue: number;
 
     // Use the single target series variable
-    if (
-      this.state.targetSeries === "maxhold" &&
-      this.state.maxHoldEnabled &&
-      this.state.maxHoldData.length > 0
-    ) {
+    if (this.state.maxHoldEnabled && this.state.maxHoldData.length > 0) {
       yValue = this.state.maxHoldData[closestIndex];
     } else {
       yValue = this.state.fftData[closestIndex];
@@ -159,17 +151,6 @@ export class DataManager {
     return this._state.maxHoldEnabled;
   }
 
-  setTargetSeries(target: TargetSeries) {
-    if (this._state.targetSeries !== target) {
-      this._state.targetSeries = target;
-      this.notifyTargetSeriesChanged(target);
-    }
-  }
-
-  getTargetSeries() {
-    return this._state.targetSeries;
-  }
-
   // Callback Management
   addCallback<T extends keyof FftCallbacks>(
     callbackKey: T,
@@ -185,10 +166,6 @@ export class DataManager {
 
   private notifyMaxHoldToggled(enabled: boolean): void {
     this.eventBus.emit("onMaxHoldToggled", enabled);
-  }
-
-  private notifyTargetSeriesChanged(target: TargetSeries): void {
-    this.eventBus.emit("onTargetSeriesChanged", target);
   }
 
   findClosestIndex(x: number): number {

@@ -158,6 +158,7 @@ function SampleFFT() {
             <CardHeader>
               <CardTitle className="text-center">Chart Mode</CardTitle>
             </CardHeader>
+            <Button onClick={() => manager?.maxHold.enable()}></Button>
           </Card>
         </div>
         <div className="flex-1">

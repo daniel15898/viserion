@@ -6,7 +6,6 @@ import type {
   MarkersCallbacks,
   FftDisplayCallbacks,
 } from "../types/fft-callbacks";
-import type { TargetSeries } from "../types/fft-data-manager";
 import type { FFTManagerConfig, FFTParams } from "../types/fft-manager";
 import type { FrequencyUnit } from "../types/frequency-units";
 
@@ -176,23 +175,6 @@ export class FFTChartManager {
     };
   }
 
-  get targetSeries() {
-    return {
-      set: (target: TargetSeries) => {
-        this._dataManager.setTargetSeries(target);
-        this._displayManager.updateChartTarget(
-          target,
-          this._dataManager.state.maxHoldEnabled
-        );
-      },
-      get: () => this._dataManager.getTargetSeries(),
-
-      addCallback: (callback: (target: TargetSeries) => void) => {
-        return this._dataManager.addCallback("onTargetSeriesChanged", callback);
-      },
-    };
-  }
-
   get display() {
     return {
       setUnit: (unit: FrequencyUnit) => {
@@ -215,20 +197,13 @@ export class FFTChartManager {
       enable: () => {
         this._dataManager.enableMaxHold();
         this._displayManager.showMaxHoldSeries(true);
-        this._displayManager.updateChartTarget(
-          this._dataManager.getTargetSeries(),
-          true
-        );
+        this._displayManager.updateChartTarget(true);
         this._chart.redraw();
       },
       disable: () => {
         this._dataManager.disableMaxHold();
         this._displayManager.showMaxHoldSeries(false);
-        this._dataManager.setTargetSeries("fft");
-        this._displayManager.updateChartTarget(
-          this._dataManager.getTargetSeries(),
-          false
-        );
+        this._displayManager.updateChartTarget(false);
 
         this._chart.redraw();
       },

@@ -61,11 +61,7 @@ export class MarkerManager {
       let newY: number;
 
       // Use the single target series variable
-      if (
-        state.targetSeries === "maxhold" &&
-        state.maxHoldEnabled &&
-        state.maxHoldData.length > 0
-      ) {
+      if (state.maxHoldEnabled && state.maxHoldData.length > 0) {
         newY = state.maxHoldData[closestIndex];
       } else {
         newY = state.fftData[closestIndex];

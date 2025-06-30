@@ -7,7 +7,6 @@ export type FFTDataManagerState = {
   frequencies: number[];
   fftData: number[];
   chartData: [number, number][];
-  targetSeries: TargetSeries;
 } & MaxHoldState;
 
 export type MaxHoldState = {

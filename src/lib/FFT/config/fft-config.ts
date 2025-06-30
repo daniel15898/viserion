@@ -254,18 +254,18 @@ export const createFftChartOptions = () => {
         id: CHART_CONFIG.FFT.id,
         data: [],
         type: "spline",
-        color: "var(--primary)",
+        color: "var(--chart-1)",
         enableMouseTracking: true,
         lineWidth: 2,
         marker: {
           enabled: false,
           symbol: "triangle-down",
-          fillColor: "var(--primary)",
-          lineColor: "var(--primary)",
+          fillColor: "var(--chart-2)",
+          lineColor: "var(--chart-2)",
           radius: 4, // Fill color
           lineWidth: 1, // Border thickness
           animation: false,
-          color: "var(--primary)",
+          color: "var(--chart-2)",
         },
       },
       {
@@ -274,13 +274,17 @@ export const createFftChartOptions = () => {
         id: CHART_CONFIG.MAX_HOLD.id,
         data: [],
         type: "spline",
-        color: "var(--chart-3)",
+        color: "var(--chart-2)",
         enableMouseTracking: false,
         marker: {
           enabled: false,
+          symbol: "triangle-down",
+          fillColor: "var(--chart-1)",
+          lineColor: "var(--chart-1)",
           radius: 4, // Fill color
           lineWidth: 1, // Border thickness
-          symbol: "triangle-down",
+          animation: false,
+          color: "var(--chart-1)",
         },
         zIndex: 10,
         lineWidth: 1.5,
@@ -291,15 +295,15 @@ export const createFftChartOptions = () => {
         name: CHART_CONFIG.MARKER_ONE.name,
         index: CHART_CONFIG.MARKER_ONE.index,
         id: CHART_CONFIG.MARKER_ONE.id,
-        color: "var(--chart-2)",
+        color: "var(--chart-3)",
         enableMouseTracking: false,
         marker: {
           enabled: true,
           radius: 8,
           symbol: "triangle-down",
-          fillColor: "var(--chart-2)",
+          fillColor: "var(--chart-3)",
           lineWidth: 2,
-          lineColor: "var(--chart-1)",
+          lineColor: "var(--chart-3)",
           states: {
             hover: {
               enabled: false,
@@ -325,7 +329,7 @@ export const createFftChartOptions = () => {
           symbol: "triangle-down",
           fillColor: "var(--chart-4)",
           lineWidth: 2,
-          lineColor: "var(--chart-6)",
+          lineColor: "var(--chart-4)",
           states: {
             hover: {
               enabled: false,

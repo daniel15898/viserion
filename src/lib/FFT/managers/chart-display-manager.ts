@@ -5,7 +5,7 @@ import {
   getTooltipFormatter,
 } from "../config/fft-config";
 import type { FftDisplayCallbacks } from "../types/fft-callbacks";
-import type { TargetSeries } from "../types/fft-data-manager";
+
 import type { FftDisplayManagerState } from "../types/fft-display-manager";
 import type { FrequencyUnit } from "../types/frequency-units";
 import { getFrequencyValue } from "../utils/unitFormmater";
@@ -40,16 +40,13 @@ export class FftDisplayManager {
     this._chart.series[CHART_CONFIG.MAX_HOLD.index].setData(data);
   }
 
-  private updateMarkersTarget(
-    target: TargetSeries,
-    maxHoldEnabled: boolean
-  ): void {
+  private updateMarkersTarget(maxHoldEnabled: boolean): void {
     const markersSeries = [
       this._chart.series[CHART_CONFIG.MARKER_ONE.index],
       this._chart.series[CHART_CONFIG.MARKER_TWO.index],
     ];
 
-    if (target === "maxhold" && maxHoldEnabled) {
+    if (maxHoldEnabled) {
       const isMaxHoldSeriesVisible =
         this._chart.series[CHART_CONFIG.MAX_HOLD.index].visible;
       markersSeries.forEach((series) => {
@@ -58,6 +55,7 @@ export class FftDisplayManager {
             type: "scatter",
             linkedTo: CHART_CONFIG.MAX_HOLD.id,
             visible: isMaxHoldSeriesVisible,
+            zIndex: 3,
           },
           true
         );
@@ -78,20 +76,17 @@ export class FftDisplayManager {
     }
   }
 
-  updateChartTarget(target: TargetSeries, maxHoldEnabled: boolean): void {
-    this.updateTooltipTarget(target, maxHoldEnabled);
-    this.updateMarkersTarget(target, maxHoldEnabled);
+  updateChartTarget(maxHoldEnabled: boolean): void {
+    this.updateTooltipTarget(maxHoldEnabled);
+    this.updateMarkersTarget(maxHoldEnabled);
   }
 
   // Tooltip and Mouse Tracking Management
-  private updateTooltipTarget(
-    target: TargetSeries,
-    maxHoldEnabled: boolean
-  ): void {
+  private updateTooltipTarget(maxHoldEnabled: boolean): void {
     const fftSeriesIndex = CHART_CONFIG.FFT.index;
     const maxHoldSeriesIndex = CHART_CONFIG.MAX_HOLD.index;
 
-    if (target === "maxhold" && maxHoldEnabled) {
+    if (maxHoldEnabled) {
       // Enable tracking on max hold, disable on FFT
       if (this._chart.series[maxHoldSeriesIndex]) {
         this._chart.series[fftSeriesIndex].update(
@@ -99,6 +94,7 @@ export class FftDisplayManager {
             type: "spline",
             enableMouseTracking: false,
             states: { hover: { enabled: false } },
+            zIndex: 1,
           },
           false
         );
@@ -108,6 +104,7 @@ export class FftDisplayManager {
             type: "spline",
             enableMouseTracking: true,
             states: { hover: { enabled: true } },
+            zIndex: 2,
           },
           false
         );
