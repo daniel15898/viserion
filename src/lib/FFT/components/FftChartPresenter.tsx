@@ -54,6 +54,7 @@ const FftChartPresenter = forwardRef<
         highcharts={highcharts}
         containerProps={{
           className: cn("w-full h-full", className),
+          id: "fft-container",
         }}
         constructorType={constructorType}
         allowChartUpdate={allowChartUpdate}

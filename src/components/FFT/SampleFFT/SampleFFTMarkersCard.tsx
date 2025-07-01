@@ -27,7 +27,7 @@ function SampleFFTMarkersCard({
       "onMarkerRemoved",
       (marker, reason) => {
         if (reason) {
-          toast.warn(`Marker ${marker.index} removed: ${reason}`);
+          toast.warn(`Marker ${marker.seriesIndex} removed: ${reason}`);
         }
       }
     );
@@ -67,7 +67,7 @@ const MarkerCard = ({ marker }: { marker: MarkerData }) => {
           ></span>
         )}
         {/* index -1 because the series are absolute index  => [fft,maxhold,marker-1,marker-2] */}
-        <span>{`Marker ${marker.index - 1}`}</span>
+        <span>{`Marker ${marker.seriesIndex - 1}`}</span>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 pl-3">
         <Label className="opacity-80">{`F: ${formatFrequency(

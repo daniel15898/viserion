@@ -1,6 +1,5 @@
 import { EventBus } from "@/lib/EventBus/eventBus";
 import type { MarkersCallbacks } from "../types/fft-callbacks";
-import type { FFTDataManagerState } from "../types/fft-data-manager";
 import type { FFTParams } from "../types/fft-manager";
 import type { MarkerData } from "../types/fft-markers";
 
@@ -13,15 +12,18 @@ export class MarkerManager {
     this.chart = chart;
   }
 
-  addMarker(id: string, index: number, x: number, y: number) {
-    this.chart.series[index].setData([{ x, y }], true);
+  addMarker(id: string, x: number, y: number, frequencyIndex: number) {
+    const markerSeries = this.chart.get(id) as Highcharts.Series;
+    if (!markerSeries) return;
+    markerSeries.setData([{ x, y }], true);
     this.markers[id] = {
       id,
-      index,
+      seriesIndex: markerSeries.index,
+      frequencyIndex,
       x,
       y,
-      color: this.chart.series[index].color as string,
-      marker: this.chart.series[index],
+      color: markerSeries.color as string,
+      marker: markerSeries,
     };
     this.chart.redraw();
     this.notifyMarkersChanged();
@@ -50,24 +52,16 @@ export class MarkerManager {
     }
   }
 
-  updateMarkersFromFFT(state: FFTDataManagerState) {
+  updateMarkersFromFFT(fftData: number[]) {
     Object.keys(this.markers).forEach((markerId) => {
       const marker = this.markers[markerId];
       if (!marker) return;
 
-      const closestIndex = this.findClosestIndex(marker.x, state.fftParams);
-      if (closestIndex === -1) return;
+      const markerY = fftData[marker.frequencyIndex];
 
-      let newY: number;
+      if (!markerY) return;
 
-      // Use the single target series variable
-      if (state.maxHoldEnabled && state.maxHoldData.length > 0) {
-        newY = state.maxHoldData[closestIndex];
-      } else {
-        newY = state.fftData[closestIndex];
-      }
-
-      this.updateMarker(markerId, marker.x, newY);
+      this.updateMarker(markerId, marker.x, markerY);
     });
   }
 
@@ -84,12 +78,11 @@ export class MarkerManager {
   }
 
   private findClosestIndex(x: number, fftParams: FFTParams): number {
+    const { centerFrequency, sampleRate, fftSize } = fftParams;
     const closestIndex = Math.round(
-      (x - (fftParams.centerFrequency - fftParams.sampleRate / 2)) /
-        (fftParams.sampleRate / fftParams.fftSize)
+      (x - (centerFrequency - sampleRate / 2)) / (sampleRate / fftSize)
     );
-
-    return closestIndex;
+    return Math.max(0, Math.min(closestIndex, fftSize - 1));
   }
 
   getMarkersData() {

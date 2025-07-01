@@ -6,11 +6,13 @@ import type { FrequencyUnit } from "./frequency-units";
 export type OnFftDataChangedCallback = (data: number[]) => void;
 export type OnMaxHoldToggledCallback = (enabled: boolean) => void;
 export type OnTargetSeriesChangedCallback = (target: TargetSeries) => void;
+export type OnChartBandPowerChangedCallback = (bandPower: number) => void;
 
 export type FftCallbacks = {
   onFftDataChanged: OnFftDataChangedCallback;
   onMaxHoldToggled: OnMaxHoldToggledCallback;
   onTargetSeriesChanged: OnTargetSeriesChangedCallback;
+  onChartBandPowerChanged: OnChartBandPowerChangedCallback;
 };
 
 // Display callbacks
@@ -30,15 +32,20 @@ export type OnMarkerRemovedCallback = (
   reason?: string
 ) => void;
 export type OnMarkerUpdatedCallback = (marker: MarkerData) => void;
+export type OnMarkersBandPowerChangedCallback = (bandPower: number) => void;
 
 export type MarkersCallbacks = {
   onMarkersChanged: OnMarkersChangedCallback;
   onMarkerAdded: OnMarkerAddedCallback;
   onMarkerRemoved: OnMarkerRemovedCallback;
   onMarkerUpdated: OnMarkerUpdatedCallback;
+  onMarkersBandPowerChanged: OnMarkersBandPowerChangedCallback;
 };
 
 // Fft manager callbacks
 export type FftManagerCallbacks = FftCallbacks &
   MarkersCallbacks &
   FftDisplayCallbacks;
+
+// Data manager callbacks
+export type FftDataManagerCallbacks = FftCallbacks & MarkersCallbacks;

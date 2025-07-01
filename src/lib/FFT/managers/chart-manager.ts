@@ -1,117 +1,44 @@
-import { CHART_CONFIG } from "../config/fft-config";
-import { MarkerManager } from "./markers-manager";
 import { DataManager } from "./data-manager";
 import { FftDisplayManager } from "./chart-display-manager";
 import type {
   MarkersCallbacks,
   FftDisplayCallbacks,
+  FftCallbacks,
 } from "../types/fft-callbacks";
 import type { FFTManagerConfig, FFTParams } from "../types/fft-manager";
 import type { FrequencyUnit } from "../types/frequency-units";
+import { ChartEventManager } from "./chart-event-manager";
 
 export class FFTChartManager {
   private _chart: Highcharts.Chart;
-  private _markerManager: MarkerManager;
   private _dataManager: DataManager;
+
+  private _chartEventManager: ChartEventManager;
   private _displayManager: FftDisplayManager;
 
   constructor(chart: Highcharts.Chart, config?: FFTManagerConfig) {
     this._chart = chart;
-    this._markerManager = new MarkerManager(chart);
-    this._dataManager = new DataManager(config);
+    this._dataManager = new DataManager(chart, config);
     this._displayManager = new FftDisplayManager(
       chart,
       config?.defaultParams.displayUnit
     );
+    this._chartEventManager = new ChartEventManager(chart);
 
     this.initialize_events();
   }
 
   private initialize_events() {
-    this.setupChartClickHandler();
-    this._chart.redraw();
-  }
-
-  private setupChartClickHandler() {
-    const fftChart = this._chart.series[CHART_CONFIG.FFT.index];
-    const maxHoldChart = this._chart.series[CHART_CONFIG.MAX_HOLD.index];
-    if (!fftChart) return;
-    // Setup series click handler
-    fftChart.update({
-      type: "spline",
-      events: {
-        click: (event) =>
-          this.handleSeriesClick(
-            event as Highcharts.SeriesClickEventObject & MouseEvent
-          ),
-      },
+    this._chartEventManager.initialize({
+      addMarker: this.markers.add,
     });
-
-    // Setup chart click handler
-    this._chart.update(
-      {
-        chart: {
-          events: {
-            click: (event) =>
-              this.handleChartClick(event as Highcharts.ChartClickEventObject),
-          },
-        },
-      },
-      false
-    );
-    if (maxHoldChart) {
-      maxHoldChart.update({
-        type: "spline",
-        events: {
-          click: (event) =>
-            this.handleSeriesClick(
-              event as Highcharts.SeriesClickEventObject & MouseEvent
-            ),
-        },
-      });
-    }
-  }
-  private addMarkerBasedOnModifier(event: MouseEvent, x: number) {
-    if (event.metaKey || event.altKey) {
-      this.addMarker(
-        CHART_CONFIG.MARKER_ONE.id,
-        CHART_CONFIG.MARKER_ONE.index,
-        x
-      );
-    }
-
-    if (event.shiftKey) {
-      this.addMarker(
-        CHART_CONFIG.MARKER_TWO.id,
-        CHART_CONFIG.MARKER_TWO.index,
-        x
-      );
-    }
-  }
-
-  private handleChartClick(event: Highcharts.ChartClickEventObject) {
-    const x = event.xAxis[0].value;
-    this.addMarkerBasedOnModifier(event, x);
-  }
-
-  private handleSeriesClick(
-    event: Highcharts.SeriesClickEventObject & MouseEvent
-  ) {
-    const { x } = event.point;
-    if (!x) return;
-    this.addMarkerBasedOnModifier(event, x);
-  }
-
-  get chart() {
-    return this._chart;
+    this._chart.redraw();
   }
 
   setFftParams(params: Partial<FFTParams>) {
     const needsUpdate = this._dataManager.setFftParams(params);
     if (needsUpdate) {
-      this._markerManager.validateMarkersPosition(
-        this._dataManager.getFftParams()
-      );
+      this._dataManager.validateMarkersPosition();
     }
   }
 
@@ -120,40 +47,35 @@ export class FFTChartManager {
     // Update data manager
     const { fftData, maxHoldData } = this._dataManager.updateFFTData(data);
     this._displayManager.updateFFTSeries(fftData);
+    this._dataManager.calculateChartBandPower(data);
     if (maxHoldData) {
       this._displayManager.updateMaxHoldSeries(maxHoldData);
     }
-    this._markerManager.updateMarkersFromFFT(this._dataManager.state);
-  }
-
-  private addMarker(id: string, index: number, x: number) {
-    const { x: xValue, y: yValue } =
-      this._dataManager.getPointPositionByTarget(x);
-    this._markerManager.addMarker(id, index, xValue, yValue);
+    this._dataManager.updateMarkersFromFFT(data);
   }
 
   get markers() {
     return {
       // Expose addMarker but internally pass the state
       add: (id: string, index: number, x: number) => {
-        return this.addMarker(id, index, x);
+        this._dataManager.addMarker(id, index, x);
       },
       getAll: () => {
-        return this._markerManager.getMarkersData();
+        return this._dataManager.getMarkersData();
       },
       // Expose other marker methods you want to make public
       remove: (id: string) => {
-        return this._markerManager.removeMarker(id);
+        return this._dataManager.removeMarker(id);
       },
 
       updatePosition: (id: string, frequency: number) => {
-        const { x: validatedX, y: yValue } =
-          this._dataManager.getPointPositionByTarget(frequency);
-        this._markerManager.updateMarker(id, validatedX, yValue);
+        const { x: xValue, y: yValue } =
+          this._dataManager.getPointPositionByFrequency(frequency);
+        this._dataManager.updateMarker(id, xValue, yValue);
       },
 
       getPosition: (id: string) => {
-        const marker = this._markerManager.getMarkersData()[id];
+        const marker = this._dataManager.getMarkersData()[id];
         return marker ? { frequency: marker.x, amplitude: marker.y } : null;
       },
 
@@ -170,9 +92,16 @@ export class FFTChartManager {
         callbackKey: keyof MarkersCallbacks,
         callback: MarkersCallbacks[keyof MarkersCallbacks]
       ) => {
-        return this._markerManager.addCallback(callbackKey, callback);
+        return this._dataManager.addCallback(callbackKey, callback);
       },
     };
+  }
+
+  addCallback(
+    callbackKey: keyof FftCallbacks,
+    callback: FftCallbacks[keyof FftCallbacks]
+  ) {
+    return this._dataManager.addCallback(callbackKey, callback);
   }
 
   get display() {
@@ -214,7 +143,18 @@ export class FFTChartManager {
     };
   }
 
+  get bandPower() {
+    return {
+      getChartBandPower: () => this._dataManager.state.fftBandPower,
+      getMarkersBandPower: () => this._dataManager.state.markersBandPower,
+    };
+  }
+
   get state() {
     return this._dataManager.state;
+  }
+
+  get chart() {
+    return this._chart;
   }
 }

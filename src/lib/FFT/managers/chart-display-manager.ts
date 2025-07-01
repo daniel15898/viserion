@@ -83,13 +83,15 @@ export class FftDisplayManager {
 
   // Tooltip and Mouse Tracking Management
   private updateTooltipTarget(maxHoldEnabled: boolean): void {
-    const fftSeriesIndex = CHART_CONFIG.FFT.index;
-    const maxHoldSeriesIndex = CHART_CONFIG.MAX_HOLD.index;
+    const fftSeries = this._chart.get(CHART_CONFIG.FFT.id) as Highcharts.Series;
+    const maxHoldSeries = this._chart.get(
+      CHART_CONFIG.MAX_HOLD.id
+    ) as Highcharts.Series;
 
     if (maxHoldEnabled) {
       // Enable tracking on max hold, disable on FFT
-      if (this._chart.series[maxHoldSeriesIndex]) {
-        this._chart.series[fftSeriesIndex].update(
+      if (maxHoldSeries && fftSeries) {
+        fftSeries.update(
           {
             type: "spline",
             enableMouseTracking: false,
@@ -99,7 +101,7 @@ export class FftDisplayManager {
           false
         );
 
-        this._chart.series[maxHoldSeriesIndex].update(
+        maxHoldSeries.update(
           {
             type: "spline",
             enableMouseTracking: true,
@@ -111,7 +113,7 @@ export class FftDisplayManager {
       }
     } else {
       // Enable tracking on FFT, disable on max hold
-      this._chart.series[fftSeriesIndex].update(
+      fftSeries.update(
         {
           type: "spline",
           enableMouseTracking: true,
@@ -120,8 +122,8 @@ export class FftDisplayManager {
         false
       );
 
-      if (this._chart.series[maxHoldSeriesIndex]) {
-        this._chart.series[maxHoldSeriesIndex].update(
+      if (maxHoldSeries) {
+        maxHoldSeries.update(
           {
             type: "spline",
             enableMouseTracking: false,

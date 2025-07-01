@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import SampleFFTMarkersCard from "./SampleFFTMarkersCard";
+import SampleBandPowerCard from "./SampleBandPowerCard";
 
 function SampleFFT() {
   const chartRef = useRef<HighchartsReactRefObject | null>(null);
@@ -54,13 +55,7 @@ function SampleFFT() {
 
     ws.onmessage = (event: MessageEvent<ArrayBuffer>) => {
       const data = convertFloat16BufferToArray(event.data);
-
-      const startTime2 = performance.now();
       manager.updateFFTData(data);
-      const endTime2 = performance.now();
-      // console.log(
-      //   `updateFFTData Time taken: ${endTime2 - startTime2} milliseconds`
-      // );
     };
     ws.onopen = () => {
       console.log("WebSocket connection established");
@@ -149,11 +144,7 @@ function SampleFFT() {
             />
           )}
 
-          <Card className="rounded-lg">
-            <CardHeader>
-              <CardTitle>Band Power</CardTitle>
-            </CardHeader>
-          </Card>
+          {manager && <SampleBandPowerCard fftManager={manager} />}
           <Card className="rounded-lg">
             <CardHeader>
               <CardTitle className="text-center">Chart Mode</CardTitle>
